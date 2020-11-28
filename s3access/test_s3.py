@@ -4,6 +4,7 @@ import tables
 import tempfile
 import h5py
 import os
+import traceback
 import pandas as pd 
 from hd5_getters import *
 
@@ -90,7 +91,6 @@ def transform_s3(key, bucket="songsbuckettest"):
         try:
             return process_h5_file(tmp.name)
         except Exception as e:
-            print(str(e))
             return []
 
 
@@ -100,25 +100,28 @@ def load_config():
 
 def rows_to_file(rows,count,path,bucket):
     print(len(rows))
+    if(len(rows)==0):
+        return
+
     col_name = ["artist_familiarity", "artist_hotttnesss", "artist_id", "artist_location", "artist_mbtags", "artist_mbtags_count", "artist_name", "artist_terms", "artist_terms_freq", "artist_terms_weight", "danceability", "duration", "end_of_fade_in", "energy", "key","key_confidence", "loudness", "mode", "mode_confidence", "release", 
  "segments_confidence", "segments_loudness_max", "segments_loudness_max_time", 
 "segments_pitches", "segments_timbre", "similar_artists", 
 "song_hotttnesss", "song_id", "start_of_fade_out", "tempo", "time_signature", 
 "time_signature_confidence", "title", "track_id", "year"]
+    song_df = pd.DataFrame(columns=col_name)
     try:
-        song_df = pd.DataFrame(columns=col_name)
         for row in rows:
-            row_series =pd.Series(row,index=col_name)
-            song_df=song_df.append(row_series,ignore_index=True)
+            if(len(row) !=0):
+                row_series =pd.Series(row,index=col_name)
+                song_df=song_df.append(row_series,ignore_index=True)
 
         temp_path = f"/Users/rohanbansal/Documents/CMU/Sem_2/10605/project/MillionSongSubset/Million_Song_Analysis/s3access/temp_{count}.csv"
         song_df.to_csv(temp_path)
         name = path + f"outsongs_{count}.csv"
-    
+        
         response = s3.upload_file(temp_path, bucket, name)
         os.remove(temp_path)
     except Exception as e:
-            print(str(e))
             return
     
     return
@@ -134,8 +137,8 @@ def main():
     bucket =  conf["bucket_name"]
     # prefix  = "data/A/"
     prefix  = conf["load_path"]
-    # final_path = "processed/"
-    final_path= conf["out_path"]
+    final_path = "processed/"
+    # final_path= conf["out_path"]
     processed=[]
     chunk_size = conf["chuncksize"]
     out_file_count =0
