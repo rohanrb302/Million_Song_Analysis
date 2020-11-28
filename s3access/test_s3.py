@@ -3,22 +3,18 @@ import json
 import tables
 import tempfile
 import h5py
+import pandas as pd 
 from hd5_getters import *
 
-
-with open('config.json', 'r') as f:
-    config = json.load(f)
 
 s3=boto3.client('s3')
 
 def process_h5_file(filename):
     h5File = open_h5_file_read(filename)
-    # print(h5File['metadata'].keys())
     song_num = get_num_songs(h5File)    
     result = []
     for songidx in range(song_num):
         song_info = []
-        # METADATA
         song_info.append(float(get_artist_familiarity(h5File,songidx)))
         song_info.append(float(get_artist_hotttnesss(h5File,songidx)))
         song_info.append(str(get_artist_id(h5File,songidx)))
@@ -57,7 +53,7 @@ def process_h5_file(filename):
 
         result.append(song_info)
     h5File.close()
-    return result   
+    return result[0]   
 
     # return filename['metadata']['songs'][:1]['artist_familiarity']
    
@@ -96,6 +92,18 @@ def transform_s3(key, bucket="songsbuckettest"):
             print(str(e))
             return []
 
+
+def load_config():
+    with open('config.json', 'r') as f:
+        return(json.load(f))
+
+def rows_to_file(rows):
+    return
+    # Write some code to save a list of rows into a temporary CSV
+    # for example using pandas.
+
+
+
 def main():
     bucket = "songsbuckettest"
     prefix  = "data/A/R/F/"
@@ -103,7 +111,7 @@ def main():
     for prefix in get_prefixes(bucket,prefix):
         processed.append(transform_s3(prefix))
 
-    print(processed[0])
+    print(len(processed[0]))
 
 if __name__ =="__main__":
     main()
