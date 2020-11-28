@@ -105,32 +105,39 @@ def rows_to_file(rows,count,path,bucket):
 "segments_pitches", "segments_timbre", "similar_artists", 
 "song_hotttnesss", "song_id", "start_of_fade_out", "tempo", "time_signature", 
 "time_signature_confidence", "title", "track_id", "year"]
-    song_df = pd.DataFrame(columns=col_name)
-    for row in rows:
-        row_series =pd.Series(row,index=col_name)
-        song_df=song_df.append(row_series,ignore_index=True)
-
-    temp_path = f"/Users/rohanbansal/Documents/CMU/Sem_2/10605/project/MillionSongSubset/Million_Song_Analysis/s3access/temp_{count}.csv"
-    song_df.to_csv(temp_path)
-    name = path + f"outsongs_{count}.csv"
     try:
-        response = s3.upload_file(temp_path, bucket, name)
-    except Exception as e:
-        print(str(e))
+        song_df = pd.DataFrame(columns=col_name)
+        for row in rows:
+            row_series =pd.Series(row,index=col_name)
+            song_df=song_df.append(row_series,ignore_index=True)
+
+        temp_path = f"/Users/rohanbansal/Documents/CMU/Sem_2/10605/project/MillionSongSubset/Million_Song_Analysis/s3access/temp_{count}.csv"
+        song_df.to_csv(temp_path)
+        name = path + f"outsongs_{count}.csv"
     
-    os.remove(temp_path)
+        response = s3.upload_file(temp_path, bucket, name)
+        os.remove(temp_path)
+    except Exception as e:
+            print(str(e))
+            return
+    
     return
+    
     # Write some code to save a list of rows into a temporary CSV
     # for example using pandas.
 
 
 
 def main():
-    bucket = "songsbuckettest"
-    prefix  = "data/A/R/F/"
-    final_path = "processed/"
+    # bucket = "songsbuckettest"
+    conf =  load_config()
+    bucket =  conf["bucket_name"]
+    # prefix  = "data/A/"
+    prefix  = conf["load_path"]
+    # final_path = "processed/"
+    final_path= conf["out_path"]
     processed=[]
-    chunk_size = 10
+    chunk_size = conf["chuncksize"]
     out_file_count =0
     for prefix in get_prefixes(bucket,prefix):
         processed.append(transform_s3(prefix))
