@@ -100,7 +100,7 @@ chunk_size = 10000
 for prefix in get_prefixes():
     processed.append(transform_s3(prefix))
 
-print(procesed)
+print(processed)
     
     #if len(processed) % chunk_size == 0:
     #    rows_to_file(processed) 
