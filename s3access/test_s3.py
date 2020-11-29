@@ -6,6 +6,7 @@ import h5py
 import os
 import traceback
 import pandas as pd 
+from tqdm import tqdm
 from hd5_getters import *
 
 
@@ -18,36 +19,12 @@ def process_h5_file(filename):
     for songidx in range(song_num):
         song_info = []
         song_info.append(float(get_artist_familiarity(h5File,songidx)))
-        song_info.append(float(get_artist_hotttnesss(h5File,songidx)))
-        song_info.append(str(get_artist_id(h5File,songidx)))
-        song_info.append(str(get_artist_location(h5File,songidx)))
-        song_info.append(get_artist_mbtags(h5File,songidx).tolist())
-        song_info.append(get_artist_mbtags_count(h5File,songidx).tolist())
-        song_info.append(str(get_artist_name(h5File,songidx)))
-        song_info.append(get_artist_terms(h5File,songidx).tolist())
-        song_info.append(get_artist_terms_freq(h5File,songidx).tolist())
-        song_info.append(get_artist_terms_weight(h5File,songidx).tolist())
-        song_info.append(float(get_danceability(h5File,songidx)))
         song_info.append(float(get_duration(h5File,songidx)))
-        song_info.append(float(get_end_of_fade_in(h5File,songidx)))
-        song_info.append(float(get_energy(h5File,songidx)))
         song_info.append(float(get_key(h5File,songidx)))
-        song_info.append(float(get_key_confidence(h5File,songidx)))
         song_info.append(float(get_loudness(h5File,songidx)))
         song_info.append(float(get_mode(h5File,songidx)))
-        song_info.append(float(get_mode_confidence(h5File,songidx)))
-        song_info.append(str(get_release(h5File,songidx)))
-        song_info.append(get_segments_confidence(h5File,songidx).tolist())        
-        song_info.append(get_segments_loudness_max(h5File,songidx).tolist())        
-        song_info.append(get_segments_loudness_max_time(h5File,songidx).tolist())    
-        song_info.append(get_segments_pitches(h5File,songidx).tolist())    
-        song_info.append(get_segments_timbre(h5File,songidx).tolist())    
-        song_info.append(get_similar_artists(h5File,songidx).tolist())   
-        song_info.append(float(get_artist_hotttnesss(h5File,songidx)))
-        song_info.append(str(get_song_id(h5File,songidx)))
-        song_info.append(float(get_start_of_fade_out(h5File,songidx)))
-        song_info.append(float(get_tempo(h5File,songidx)))
-        song_info.append(int(get_time_signature(h5File,songidx)))
+        song_info.append(float(get_artist_hotttnesss(h5File,songidx)))# Song hotness
+        song_info.append(float(get_tempo(h5tocopy,songidx)))
         song_info.append(float(get_time_signature_confidence(h5File,songidx)))
         song_info.append(str(get_title(h5File,songidx)))
         song_info.append(str(get_track_id(h5File,songidx)))
@@ -59,7 +36,6 @@ def process_h5_file(filename):
 
     # return filename['metadata']['songs'][:1]['artist_familiarity']
    
-
 
 def get_prefixes(bucket, prefix):
     # In order to run with multiple threads/machines at a time, the prefix could be set to different things,
@@ -103,10 +79,8 @@ def rows_to_file(rows,count,path,bucket):
     if(len(rows)==0):
         return
 
-    col_name = ["artist_familiarity", "artist_hotttnesss", "artist_id", "artist_location", "artist_mbtags", "artist_mbtags_count", "artist_name", "artist_terms", "artist_terms_freq", "artist_terms_weight", "danceability", "duration", "end_of_fade_in", "energy", "key","key_confidence", "loudness", "mode", "mode_confidence", "release", 
- "segments_confidence", "segments_loudness_max", "segments_loudness_max_time", 
-"segments_pitches", "segments_timbre", "similar_artists", 
-"song_hotttnesss", "song_id", "start_of_fade_out", "tempo", "time_signature", 
+    col_name = ["artist_familiarity", "duration", "key", "loudness", "mode", 
+"song_hotttnesss", "song_id", "tempo", 
 "time_signature_confidence", "title", "track_id", "year"]
     song_df = pd.DataFrame(columns=col_name)
     try:
@@ -137,12 +111,12 @@ def main():
     bucket =  conf["bucket_name"]
     # prefix  = "data/A/"
     prefix  = conf["load_path"]
-    final_path = "processed/"
+    final_path = "processed/rohan/"
     # final_path= conf["out_path"]
     processed=[]
     chunk_size = conf["chuncksize"]
     out_file_count =0
-    for prefix in get_prefixes(bucket,prefix):
+    for prefix in tqdm(get_prefixes(bucket,prefix)):
         processed.append(transform_s3(prefix))
 
         if len(processed) % chunk_size == 0:
