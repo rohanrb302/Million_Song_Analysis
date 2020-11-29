@@ -1,0 +1,11 @@
+{
+    "service_name":"s3",
+    "region_name":"us-east-1",
+    "aws_access_key_id":"AKIAYUJLNEYUSIRIZO2E",
+    "aws_secret_access_key":"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",
+    "bucket_name":"songsbuckettest",
+    "load_path": "data/",
+    "out_path": "processed/",
+    "chuncksize": 5
+
+}

@@ -89,7 +89,6 @@ def transform_s3(key, bucket="songsbuckettest"):
         try:
             return process_h5_file(tmp.name)
         except Exception as e:
-            print(str(e))
             return []
 
 
@@ -97,21 +96,65 @@ def load_config():
     with open('config.json', 'r') as f:
         return(json.load(f))
 
+
+def rows_to_file(rows,count,path,bucket):
+    print(len(rows))
+    if(len(rows)==0):
+        return
+
+    col_name = ["artist_familiarity", "artist_hotttnesss", "artist_id", "artist_location", "artist_mbtags", "artist_mbtags_count", "artist_name", "artist_terms", "artist_terms_freq", "artist_terms_weight", "danceability", "duration", "end_of_fade_in", "energy", "key","key_confidence", "loudness", "mode", "mode_confidence", "release", 
+ "segments_confidence", "segments_loudness_max", "segments_loudness_max_time", 
+"segments_pitches", "segments_timbre", "similar_artists", 
+"song_hotttnesss", "song_id", "start_of_fade_out", "tempo", "time_signature", 
+"time_signature_confidence", "title", "track_id", "year"]
+    song_df = pd.DataFrame(columns=col_name)
+    try:
+        for row in rows:
+            if(len(row) !=0):
+                row_series =pd.Series(row,index=col_name)
+                song_df=song_df.append(row_series,ignore_index=True)
+
+        temp_path = f"/Users/rohanbansal/Documents/CMU/Sem_2/10605/project/MillionSongSubset/Million_Song_Analysis/s3access/temp_{count}.csv"
+        song_df.to_csv(temp_path)
+        name = path + f"outsongs_{count}.csv"
+        
+        response = s3.upload_file(temp_path, bucket, name)
+        os.remove(temp_path)
+    except Exception as e:
+            return
+    
+    return
+
 def rows_to_file(rows):
     return
+
     # Write some code to save a list of rows into a temporary CSV
     # for example using pandas.
 
 
 
 def main():
-    bucket = "songsbuckettest"
-    prefix  = "data/A/R/F/"
+    # bucket = "songsbuckettest"
+    conf =  load_config()
+    bucket =  conf["bucket_name"]
+    # prefix  = "data/A/"
+    prefix  = conf["load_path"]
+    final_path = "processed/"
+    # final_path= conf["out_path"]
     processed=[]
+    chunk_size = conf["chuncksize"]
+    out_file_count =0
     for prefix in get_prefixes(bucket,prefix):
         processed.append(transform_s3(prefix))
 
-    print(len(processed[0]))
+        if len(processed) % chunk_size == 0:
+            out_file_count = out_file_count+1
+            rows_to_file(processed,out_file_count,final_path,bucket) 
+        # # upload to s3. make sure to not overwrite the name
+            processed = []
+
+    # print(len(processed[1]))
 
 if __name__ =="__main__":
     main()
+
