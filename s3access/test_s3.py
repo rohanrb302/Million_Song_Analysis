@@ -79,7 +79,7 @@ def rows_to_file(rows,count,path,bucket):
         return
 
     col_name = ["artist_familiarity", "duration", "key", "loudness", "mode", 
-"song_hotttnesss", "song_id", "tempo", 
+"song_hotttnesss", "tempo", 
 "time_signature_confidence", "title", "track_id", "year"]
     song_df = pd.DataFrame(columns=col_name)
     try:
