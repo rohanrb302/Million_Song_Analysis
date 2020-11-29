@@ -3,8 +3,6 @@ import json
 import tables
 import tempfile
 import h5py
-import os
-import traceback
 import pandas as pd 
 from hd5_getters import *
 
@@ -98,6 +96,7 @@ def load_config():
     with open('config.json', 'r') as f:
         return(json.load(f))
 
+
 def rows_to_file(rows,count,path,bucket):
     print(len(rows))
     if(len(rows)==0):
@@ -125,7 +124,10 @@ def rows_to_file(rows,count,path,bucket):
             return
     
     return
-    
+
+def rows_to_file(rows):
+    return
+
     # Write some code to save a list of rows into a temporary CSV
     # for example using pandas.
 
@@ -155,3 +157,4 @@ def main():
 
 if __name__ =="__main__":
     main()
+
